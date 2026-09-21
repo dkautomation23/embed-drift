@@ -64,9 +64,8 @@ def _baseline(args) -> int:
 
 
 def _check(args) -> int:
-    # A missing or unreadable fingerprint is an ordinary situation - a first run,
-    # a wrong path, a half-written file - and deserves a sentence, not a stack
-    # trace. It is also not a pass, so it exits 2.
+    # A missing fingerprint is ordinary, so it gets a sentence rather than a
+    # stack trace - and exits 2, because it is not a pass.
     try:
         saved = json.loads(args.fingerprint.read_text(encoding="utf-8"))
     except FileNotFoundError:
@@ -160,15 +159,10 @@ def main(argv: list[str] | None = None) -> int:
         p.add_argument("--model", help="embedding model name")
         p.add_argument("--base-url", default="http://127.0.0.1:11434")
         p.add_argument("--api", default="ollama", choices=["ollama", "openai"])
-        p.add_argument(
-            "--timeout",
-            type=float,
-            default=600.0,
-            # A cold model has to load before it can embed, and on a shared
-            # machine that can mean minutes. Ten of them, because a false
-            # "endpoint down" is worse than waiting.
-            help="seconds per request (default 600)",
-        )
+        # A cold model loads before it embeds; on a shared machine that is
+        # minutes. A false "endpoint down" is worse than waiting.
+        p.add_argument("--timeout", type=float, default=600.0,
+                       help="seconds per request (default 600)")
         p.add_argument(
             "--api-key-env",
             help="name of the environment variable holding the key; the value is never printed",

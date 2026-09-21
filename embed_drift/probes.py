@@ -1,24 +1,11 @@
 # -*- coding: utf-8 -*-
-"""The fixed texts every fingerprint is built from, and why these ones.
+"""The frozen probe set. A fingerprint stores its hash and refuses to compare
+against a different set, because that comparison would mean nothing.
 
-A drift check is only a comparison if both sides answer the same questions. So
-the probe set is frozen here, hashed into every fingerprint, and a check against
-a fingerprint built from a different set refuses to run rather than reporting a
-number that means nothing.
-
-The set is deliberately spread across the things an embedding model is asked to
-do in production, because a model revision rarely degrades everywhere at once:
-
-  * short factual sentences, the ordinary case
-  * two near-paraphrases, which must stay close to each other
-  * two sentences about different topics, which must stay apart
-  * code, which some revisions tokenise differently
-  * a non-English sentence, usually the first thing to shift
-  * a long paragraph, where truncation limits change behaviour
-  * punctuation-heavy text and a near-empty string, the edges
-
-Twelve is enough for 66 pairwise distances, which is a stable enough shape to
-correlate, and small enough that a check costs twelve requests.
+Spread across what a model revision tends to break unevenly: two near-paraphrases
+that must stay close, two unrelated sentences that must stay apart, code, SQL,
+German, Japanese, a long paragraph near the truncation limit, punctuation-only
+text, a bare number and a single space. Twelve gives 66 pairwise distances.
 """
 
 from __future__ import annotations
@@ -45,18 +32,11 @@ PROBES: tuple[str, ...] = (
     " ",
 )
 
-
 SEPARATOR = chr(31)
-"""ASCII unit separator, built with chr() so no control byte sits in this file.
-It cannot occur inside a probe, so two different sets cannot hash alike by
-gluing differently."""
+"""Unit separator, built with chr() so no control byte sits in this file. It
+cannot occur inside a probe, so two different sets cannot hash alike."""
 
 
 def probe_hash(probes: tuple[str, ...] = PROBES) -> str:
-    """A short hash of the exact probe set, stored with every fingerprint.
-
-    Twelve hex characters: enough that an accidental collision is not a concern,
-    short enough to read in a report and compare by eye.
-    """
     joined = SEPARATOR.join(probes).encode("utf-8")
     return hashlib.sha256(joined).hexdigest()[:12]

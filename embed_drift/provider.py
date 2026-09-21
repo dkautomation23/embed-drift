@@ -1,15 +1,7 @@
 # -*- coding: utf-8 -*-
-"""Getting vectors out of whatever is serving them.
-
-Two shapes cover almost everything: Ollama's `/api/embed` and the OpenAI-style
-`/v1/embeddings` that most hosted providers and every local gateway imitate. A
-key is read from the environment when the endpoint wants one and is never
-written to a file, never printed, and never passed on a command line where it
-would land in a shell history.
-
-One request per probe rather than a batch, on purpose: a batch endpoint that
-silently truncates or reorders would corrupt the fingerprint in a way that looks
-like drift, and the whole point of this tool is not to cry wolf.
+"""Ollama's `/api/embed` and the OpenAI-style `/v1/embeddings`, which most hosted
+providers imitate. A key is read from a named environment variable and is never
+written to a file, printed, or passed on a command line.
 """
 
 from __future__ import annotations
@@ -40,6 +32,9 @@ def _post(url: str, payload: dict, headers: dict, timeout: float) -> dict:
         raise ProviderError(f"{url} did not return JSON: {error}") from None
 
 
+# One request per probe rather than a batch: a batch endpoint that silently
+# truncates or reorders would corrupt a fingerprint in a way that looks exactly
+# like drift.
 def embed_one(
     text: str,
     *,
