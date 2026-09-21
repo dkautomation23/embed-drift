@@ -1,5 +1,9 @@
 # embed-drift
 
+[![CI](https://github.com/dkautomation23/embed-drift/actions/workflows/ci.yml/badge.svg)](https://github.com/dkautomation23/embed-drift/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/dkautomation23/embed-drift/badge)](https://scorecard.dev/viewer/?uri=github.com/dkautomation23/embed-drift)
+[![CodeQL](https://github.com/dkautomation23/embed-drift/actions/workflows/codeql.yml/badge.svg)](https://github.com/dkautomation23/embed-drift/actions/workflows/codeql.yml)
+
 Catches the failure that raises no error: your vector index was built with one
 embedding model, and the provider quietly swapped it for another.
 
