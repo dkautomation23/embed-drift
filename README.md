@@ -67,6 +67,38 @@ drops `direct` below 0.95 while `geometry` stays at 1.0 to six decimal places.
 Without that split, the tool would report a model change every time a provider
 touched its normalisation.
 
+## A real run
+
+Baseline taken with `all-minilm` (384 dimensions, probe-set hash `867a29c5b7e3`)
+on 21 September 2026, then checked three ways on the same machine:
+
+| Checked against | direct (mean) | geometry | Verdict | Exit |
+|---|---|---|---|---|
+| `all-minilm` — the same model | 1.0000 | 1.0000 | the space is where you left it | 0 |
+| `snowflake-arctic-embed:s` — different model, same 384 dimensions | **-0.0052** | **0.3494** | the shape changed | 1 |
+| `nomic-embed-text` — 768 dimensions | — | — | dimension changed, nothing comparable | 1 |
+
+Two things worth reading off that middle row.
+
+A `direct` mean of **-0.0052** means the two models' vectors are effectively
+orthogonal: different model families do not share a coordinate system at all, so
+"how far did my vector move" saturates immediately and stops being informative.
+That is precisely why the second number exists.
+
+`geometry` at **0.349** is the more interesting figure. It is far below the 0.99
+floor — the neighbourhoods have genuinely been rearranged — but it is not zero
+either, because both models do agree that two paraphrases belong closer together
+than two unrelated sentences. The partial agreement is real, and it is not
+enough: an index built on one and queried with the other returns the wrong rows.
+
+The probe that moved most was #9, the punctuation-only string. Symbols with no
+semantic content are where embedding models differ most freely, which makes that
+probe an early warning rather than a curiosity.
+
+Same-model re-runs sitting at exactly 1.0000 on both numbers is what sets the
+0.99 floor: on this provider there is no float drift to leave room for, so
+anything below 0.99 is a real change rather than noise.
+
 ## The probes
 
 Twelve fixed texts, frozen in [`probes.py`](embed_drift/probes.py) and hashed

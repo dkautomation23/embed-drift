@@ -101,7 +101,7 @@ def _check(args) -> int:
 
     if len(vectors[0]) != saved["dimension"]:
         print(
-            f"DRIFTED — dimension changed: {saved['dimension']} -> {len(vectors[0])}\n"
+            f"DRIFTED - dimension changed: {saved['dimension']} -> {len(vectors[0])}\n"
             "  Nothing in the old index is comparable to anything new. Reindex.",
             file=sys.stderr,
         )
@@ -121,21 +121,21 @@ def _check(args) -> int:
         print(f"worst probe #{result['worst_probe']}: {worst!r}")
 
     if not moved and not reshaped:
-        print("\nOK — the space is where you left it.")
+        print("\nOK - the space is where you left it.")
         return 0
 
     if moved and not reshaped:
         print(
-            "\nDRIFTED — the encoding changed but the shape survived.\n"
+            "\nDRIFTED - the encoding changed but the shape survived.\n"
             "  Vectors moved while the distances between probes did not, which is what a\n"
             "  renormalisation or a rescaling looks like. Your old vectors are no longer\n"
-            "  comparable to new ones, so reindex — but retrieval quality itself is\n"
+            "  comparable to new ones, so reindex - but retrieval quality itself is\n"
             "  probably intact once you do."
         )
         return 1
 
     print(
-        "\nDRIFTED — the shape changed. This is the bad one.\n"
+        "\nDRIFTED - the shape changed. This is the bad one.\n"
         "  Which probes are near which has been rearranged, so the neighbours your index\n"
         "  returns are no longer the neighbours it was built to return. Reindex, then\n"
         "  re-measure retrieval quality rather than assuming it came back."
@@ -144,6 +144,15 @@ def _check(args) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
+    # Printing must not be able to fail the tool. A Windows console is not UTF-8
+    # by default, and one unusual character in a message turned a successful
+    # check into a UnicodeEncodeError after all the work was already done.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(errors="replace")
+        except (AttributeError, ValueError):
+            pass
+
     parser = argparse.ArgumentParser(prog="embed-drift", description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
 

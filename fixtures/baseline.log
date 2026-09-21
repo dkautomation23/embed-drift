@@ -1,0 +1,4 @@
+fingerprint written: fixtures\all-minilm.json
+  model      all-minilm
+  dimension  384
+  probes     12 (hash 867a29c5b7e3)
